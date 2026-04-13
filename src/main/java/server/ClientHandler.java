@@ -26,7 +26,50 @@ public class ClientHandler extends Thread{
 
                 if(type.equals("LOGIN")){
                     username = parts[1];
+                    UserManager.addUser(username, this);
+                    System.out.println(username + "joined");
+
+                    for (ClientHandler user : UserManager.getAllUsers()) {
+                        user.out.println("🟢 " + username + " joined the chat");
+                    }
+
+                    // ================= MESSAGE =================
+                    else if (type.equals("MSG")) {
+                        String receiver = parts[1];
+                        String content = parts[2];
+                    
+                        // 📢 Broadcast
+                        if (receiver.equals("ALL")) {
+                            for (ClientHandler user : UserManager.getAllUsers()) {
+                                user.out.println(username + ": " + content);
+                            }
+                        }
+                    
+                        // 🔒 Private message
+                        else {
+                            ClientHandler user = UserManager.getUser(receiver);
+                            if (user != null) {
+                                user.out.println("(Private) " + username + ": " + content);
+                            } else {
+                                out.println("❌ User not found");
+                            }
+                        }
+                    }
+
+                    // ================= LOGOUT =================
+                    else if (type.equals("LOGOUT")) {
+                        handleLogout();
+                        break;
+                    }
+
+                    catch (Exception e) {
+                        // ⚪ Unexpected disconnect
+                        System.out.println(username + " disconnected unexpectedly");
+                        cleanup();
+                    }
                 }
+
+                
             }
         }
     }
